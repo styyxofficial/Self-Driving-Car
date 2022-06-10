@@ -17,7 +17,7 @@ pygame.key.set_repeat(16)
 
 # Load game assests
 car_image = pygame.image.load("images/rectangle.png").convert()
-car_1 = Car(car_image, 250, 250)
+car_1 = Car(car_image, 250, 250, 0)
 
 
 
@@ -28,11 +28,11 @@ def on_event(event):
         
     if pygame.key.get_pressed()[K_DOWN]:
         screen.fill("WHITE")
-        car_1.move_down()
+        car_1.move_backward()
         
     if pygame.key.get_pressed()[K_UP]:
         screen.fill("WHITE")
-        car_1.move_up()
+        car_1.move_forward()
     
     if pygame.key.get_pressed()[K_LEFT]:
         screen.fill("WHITE")
@@ -46,7 +46,6 @@ def on_loop():
     pass
     
 def on_render():
-    pygame.display.flip()
     car_1.draw(screen)
     pygame.display.flip()
  

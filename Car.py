@@ -1,21 +1,29 @@
+import pygame
+from pygame.locals import *
+import math
 class Car:
-    def __init__(self, image, x, y):
+    def __init__(self, image, x, y, angle):
         self.image = image
         self.x = x
         self.y = y
+        self.angle = angle
     
     def draw(self, screen):
-        screen.blit(self.image, (self.x, self.y))
+        img = pygame.transform.rotate(self.image, self.angle)
+        screen.blit(img, (self.x, self.y))
         
     
-    def move_up(self):
-        self.y -= 1
+    def move_forward(self):
+        self.x += math.cos((self.angle+90) * (math.pi/180))
+        self.y -= math.sin((self.angle+90) * (math.pi/180))
     
-    def move_down(self):
-        self.y += 1
+    def move_backward(self):
+        self.x -= math.cos((self.angle+90) * (math.pi/180))
+        self.y += math.sin((self.angle+90) * (math.pi/180))
     
     def move_left(self):
-        self.x -= 1
+        self.angle += 1
+        
     
     def move_right(self):
-        self.x += 1
+        self.angle -= 1
