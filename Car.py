@@ -21,15 +21,17 @@ class Car:
 
     def draw(self, screen):
 
-        time_unit = 2
+        time_unit = 1.0
 
-        self.check_max_acceleration()
+        self.friction()
+        #self.check_max_acceleration()
 
         self.linear_velocity += time_unit * self.linear_acceleration
         self.rotational_velocity += time_unit * self.rotational_acceleration
 
         self.check_max_velocity()
 
+        #print(self.linear_acceleration)
         self.angle += self.rotational_velocity * time_unit
         self.distance_traveled += self.linear_velocity * time_unit
 
@@ -43,14 +45,17 @@ class Car:
 
         # screen.blit(img, (self.x, self.y))
         screen.blit(img, img.get_rect(center=self.image.get_rect(topleft=(self.x, self.y)).center))
+        
+        self.linear_acceleration = 0
+        self.rotational_acceleration = 0
 
     def move_forward(self, time_unit):
         time_unit = 1
-        self.linear_acceleration += 2
+        self.linear_acceleration = 2
 
     def move_backward(self, time_unit):
         time_unit = 1
-        self.linear_acceleration -= 2
+        self.linear_acceleration = -2
 
     def move_left(self):
         self.rotational_acceleration += 1
@@ -58,48 +63,44 @@ class Car:
     def move_right(self):
         self.rotational_acceleration -= 1
 
-    def friction(self, time_unit):
-
+    def friction(self):
         # By multiplying with the velocity, we get an effective terminal velocity
         # Higher number will allow the car to move faster
         terminal_velocity = 2
+    
+        if (self.linear_velocity > 0):
+            self.linear_acceleration -= 1
+        elif (self.linear_velocity < 0):
+            self.linear_acceleration += 1
+        
+        
+        
+        if (self.rotational_velocity > 0):
+            self.rotational_acceleration -= 0.5
+        elif (self.rotational_velocity < 0):
+            self.rotational_acceleration += 0.5
 
-        if self.linear_velocity > 0:
-            self.linear_acceleration -= self.linear_velocity
-        elif self.linear_velocity < 0:
-            self.linear_acceleration -= self.linear_velocity
-        else:
-            self.linear_acceleration -= 0
-
-        if self.rotational_velocity > 0:
-            self.rotational_acceleration -= 1
-        elif self.rotational_velocity < 0:
-            self.rotational_acceleration += 1
-        else:
-            self.rotational_acceleration -= 0
-
-    def __getattribute__(self, __name: str):
-        return object.__getattribute__(self, __name)
 
     def check_max_acceleration(self):
-        # if (self.linear_acceleration > 5):
-        #     self.linear_acceleration = 5
-        # if (self.linear_acceleration < -5):
-        #     self.linear_acceleration = -5
-        if (self.rotational_acceleration > 2):
-            self.rotational_acceleration = 2
-        if (self.rotational_acceleration < -2):
-            self.rotational_acceleration = -2
+        if (self.linear_acceleration > 4):
+            self.linear_acceleration = 4
+        if (self.linear_acceleration < -4):
+            self.linear_acceleration = -4
+        if (self.rotational_acceleration > 4):
+            self.rotational_acceleration = 4
+        if (self.rotational_acceleration < -4):
+            self.rotational_acceleration = -4
 
     def check_max_velocity(self):
-        if (self.linear_velocity > 10):
-            self.linear_velocity = 10
-        if (self.linear_velocity < -10):
-            self.linear_velocity = -10
-        if (self.rotational_velocity > 5):
-            self.rotational_velocity = 5
-        if (self.rotational_velocity < -5):
-            self.rotational_velocity = -5
+        if (self.linear_velocity > 20):
+            self.linear_velocity = 20
+        if (self.linear_velocity < -20):
+            self.linear_velocity = -20
+        if (self.rotational_velocity > 9):
+            self.rotational_velocity = 9
+        if (self.rotational_velocity < -9):
+            self.rotational_velocity = -9
+        
 
     def check_bounds(self):
         if (self.x < 0):

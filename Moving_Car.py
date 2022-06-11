@@ -16,10 +16,14 @@ screen = pygame.display.set_mode(
     (500, 500), pygame.HWSURFACE | pygame.DOUBLEBUF)
 screen.fill("WHITE")
 
+
 # Number of ms in 1 time unit
 # Needed for acceleration
-time_unit = 16
+time_unit = 15
 pygame.key.set_repeat(time_unit)
+
+FPS = 60
+fpsClock = pygame.time.Clock()
 
 # Load game assests
 # Car image used from : https://github.com/NeuralNine/ai-car-simulation/blob/master/car.png
@@ -33,23 +37,17 @@ def on_event(event):
         on_cleanup()
 
     if pygame.key.get_pressed()[K_DOWN]:
-        screen.fill("WHITE")
         car_1.move_backward(time_unit)
 
     if pygame.key.get_pressed()[K_UP]:
-        screen.fill("WHITE")
         car_1.move_forward(time_unit)
 
     if pygame.key.get_pressed()[K_LEFT]:
-        screen.fill("WHITE")
         car_1.move_left()
 
     if pygame.key.get_pressed()[K_RIGHT]:
-        screen.fill("WHITE")
         car_1.move_right()
-
-    # pygame.time.delay(16)
-
+    
 
 def on_loop():
     pass
@@ -57,7 +55,6 @@ def on_loop():
 
 def on_render():
     screen.fill("WHITE")
-    car_1.friction(time_unit)
     car_1.draw(screen)
     pygame.display.flip()
 
@@ -73,4 +70,7 @@ while(_running):
         on_event(event)
     on_loop()
     on_render()
+    fpsClock.tick(FPS)
+
+    
 on_cleanup()
