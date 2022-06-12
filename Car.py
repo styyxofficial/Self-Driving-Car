@@ -53,20 +53,35 @@ class Car:
         self.rotational_acceleration = 0
 
     def move_forward(self, time_unit):
+        """
+        Apply a linear force forward
+        """
         time_unit = 1
         self.linear_acceleration = 2
 
     def move_backward(self, time_unit):
+        """
+        Apply a linear force backward
+        """
         time_unit = 1
         self.linear_acceleration = -2
 
     def move_left(self):
+        """
+        Apply a rotational force counter clockwise
+        """
         self.rotational_acceleration += 1
 
     def move_right(self):
+        """
+        Apply a rotational force clockwise
+        """
         self.rotational_acceleration -= 1
 
     def friction(self):
+        """
+        Create a frictional force that will stop the car when there is no acceleration
+        """
         if (self.linear_velocity > 0):
             self.linear_acceleration -= 1
         elif (self.linear_velocity < 0):
@@ -78,6 +93,9 @@ class Car:
             self.rotational_acceleration += 0.5
 
     def check_max_velocity(self):
+        """
+        Limit the velocity of the car
+        """
         if (self.linear_velocity > 20):
             self.linear_velocity = 20
         if (self.linear_velocity < -20):
@@ -88,6 +106,9 @@ class Car:
             self.rotational_velocity = -9
 
     def check_bounds(self, screen):
+        """
+        Check if the car is off the screen, and if it is, move it back onto the screen
+        """
         if (self.x < 15):
             self.x = 15
         if (self.x > screen.get_size()[0]-self.image.get_size()[0]-15):
@@ -99,6 +120,8 @@ class Car:
 
     def collision_detection(self, screen):
         """
+        Detect if the car has hit the walls of the track
+        
          *___________* 4
          |           |
          |           |
@@ -133,9 +156,8 @@ class Car:
         Returns:
             numpy array of distance values from the sensor
         """
-
+        # angle of the sensors
         sensor_offset = [0, 5, 37, 90, -5, -37, -45, -90]
-        # angle of sensor 1 is theta=0
 
         for theta_o in sensor_offset:
             slope = -math.tan((self.angle+theta_o) * (math.pi/180))
@@ -145,7 +167,7 @@ class Car:
             sensor_start = (round(image_center[0] + math.cos((self.angle+theta_o) * (math.pi/180)) * self.image.get_size()[0]/2),
                             round(image_center[1] - math.sin((self.angle+theta_o) * (math.pi/180)) * self.image.get_size()[0]/2))
 
-            #pygame.draw.circle(surface=screen, color="blue", center=sensor_start, radius=4)
+            # Flip the sensor measurement if the car is facing left
             if (sensor_start[0] < image_center[0]):
                 flip = -1
             else:
