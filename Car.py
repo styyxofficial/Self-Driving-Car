@@ -39,8 +39,9 @@ class Car:
         self.x += math.cos((self.angle) * (math.pi/180)) * (self.linear_velocity * time_unit)
         self.y -= math.sin((self.angle) * (math.pi/180)) * (self.linear_velocity * time_unit)
 
-        self.check_bounds()
-
+        self.check_bounds(screen)
+        self.collision_detection(screen)
+        
         img = pygame.transform.rotate(self.image, self.angle)
 
         # screen.blit(img, (self.x, self.y))
@@ -64,32 +65,16 @@ class Car:
         self.rotational_acceleration -= 1
 
     def friction(self):
-        # By multiplying with the velocity, we get an effective terminal velocity
-        # Higher number will allow the car to move faster
-        terminal_velocity = 2
-    
         if (self.linear_velocity > 0):
             self.linear_acceleration -= 1
         elif (self.linear_velocity < 0):
             self.linear_acceleration += 1
         
         
-        
         if (self.rotational_velocity > 0):
             self.rotational_acceleration -= 0.5
         elif (self.rotational_velocity < 0):
             self.rotational_acceleration += 0.5
-
-
-    def check_max_acceleration(self):
-        if (self.linear_acceleration > 4):
-            self.linear_acceleration = 4
-        if (self.linear_acceleration < -4):
-            self.linear_acceleration = -4
-        if (self.rotational_acceleration > 4):
-            self.rotational_acceleration = 4
-        if (self.rotational_acceleration < -4):
-            self.rotational_acceleration = -4
 
     def check_max_velocity(self):
         if (self.linear_velocity > 20):
@@ -102,12 +87,43 @@ class Car:
             self.rotational_velocity = -9
         
 
-    def check_bounds(self):
-        if (self.x < 0):
-            self.x = 1
-        if (self.x > 500-self.image.get_size()[0]):
-            self.x = 499 - self.image.get_size()[0]
-        if (self.y < 0):
-            self.y = 0
-        if (self.y > 500-self.image.get_size()[1]):
-            self.y = 499 - self.image.get_size()[1]
+    def check_bounds(self, screen):
+        if (self.x < 15):
+            self.x = 15
+        if (self.x > screen.get_size()[0]-self.image.get_size()[0]-15):
+            self.x = screen.get_size()[0] - self.image.get_size()[0]-15
+        if (self.y < 40):
+            self.y = 40
+        if (self.y > screen.get_size()[1] - self.image.get_size()[1] - 40):
+            self.y = screen.get_size()[1] - self.image.get_size()[1] - 40
+            
+    def collision_detection(self, screen):
+        
+        """
+         *___________* 4
+         |           |
+         |           |
+         |           |
+        *|___________|* 1
+        
+        Stars are where the collisions are checked, moving counter clockwise
+        """
+        
+        length_to_corner = math.sqrt((self.image.get_size()[0]/2)**2 + (self.image.get_size()[1]/2)**2)
+        angle_to_corner = [(-self.angle) * (math.pi/180) + math.atan((self.image.get_size()[1]/2)/(self.image.get_size()[0]/2)),
+                           (-self.angle) * (math.pi/180) + math.pi + math.atan((-self.image.get_size()[1]/2)/(self.image.get_size()[0]/2)),
+                           (-self.angle) * (math.pi/180) + math.pi - math.atan((-self.image.get_size()[1]/2)/(self.image.get_size()[0]/2)),
+                           (-self.angle) * (math.pi/180) + math.atan((self.image.get_size()[1]/2)/(-self.image.get_size()[0]/2))]
+        
+        image_center = self.image.get_rect(topleft=(self.x, self.y)).center
+        
+        for i in range(len(angle_to_corner)):
+            corner = (round(length_to_corner * math.cos(angle_to_corner[i]) + image_center[0]), round(length_to_corner * math.sin(angle_to_corner[i]) + image_center[1]))
+            
+            if (tuple(screen.get_at(corner)) == (255, 255, 255, 255)):
+                pygame.draw.circle(surface=screen, color="red", center=corner, radius=4)
+            else:
+                pygame.draw.circle(surface=screen, color="green", center=corner, radius=4)
+                
+        
+        
