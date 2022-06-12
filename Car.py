@@ -105,7 +105,7 @@ class Car:
          |           |
         *|___________|* 1
 
-        Stars are where the collisions are checked, moving counter clockwise
+        Stars are where the collisions are checked, moving clockwise
         """
 
         length_to_corner = math.sqrt((self.image.get_size()[0]/2)**2 + (self.image.get_size()[1]/2)**2)
