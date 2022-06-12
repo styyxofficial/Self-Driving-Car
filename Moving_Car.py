@@ -50,7 +50,7 @@ def on_event(event):
 
     if pygame.key.get_pressed()[K_RIGHT]:
         car_1.move_right()
-    
+
 
 def on_loop():
     pass
@@ -75,5 +75,5 @@ while(_running):
     on_render()
     fpsClock.tick(FPS)
 
-    
+
 on_cleanup()
