@@ -39,18 +39,18 @@ def on_event(event):
     if event.type == QUIT:
         on_cleanup()
 
-    if pygame.key.get_pressed()[K_DOWN]:
-        car_1.move_backward(time_unit)
-
     if pygame.key.get_pressed()[K_UP]:
-        car_1.move_forward(time_unit)
-
+        car_1.move_forward()
+        
+    if pygame.key.get_pressed()[K_DOWN]:
+        car_1.move_backward()
+        
     if pygame.key.get_pressed()[K_LEFT]:
         car_1.move_left()
-
+        
     if pygame.key.get_pressed()[K_RIGHT]:
         car_1.move_right()
-
+        
 
 def on_loop():
     pass
@@ -58,6 +58,7 @@ def on_loop():
 
 def on_render():
     screen.blit(background_image, (0, 0))
+    car_1.get_data()
     car_1.draw(screen)
     pygame.display.flip()
 
@@ -77,3 +78,6 @@ while(_running):
 
 
 on_cleanup()
+
+# Use this to save genomes
+# https://github.com/CodeReclaimers/neat-python/blob/master/neat/checkpoint.py
