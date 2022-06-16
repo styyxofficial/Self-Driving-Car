@@ -16,7 +16,8 @@ class Car:
         self.is_alive = True
         
         # angle of the sensors
-        self.sensor_offset = [0, 5, 37, 90, -5, -37, -45, -90]
+        self.sensor_offset = [0, 5, 37, 90, -5, -37, -90]
+        
         # distance of each sensor
         self.distances = np.zeros(len(self.sensor_offset))
 
@@ -134,7 +135,7 @@ class Car:
          |           |
         *|___________|* 1
 
-        Stars are where the collisions are checked, moving clockwise
+        Collisions are checked on the corners of the car, marked by asterisks, moving clockwise
         """
 
         length_to_corner = math.sqrt((self.image.get_size()[0]/2)**2 + (self.image.get_size()[1]/2)**2)
@@ -166,14 +167,26 @@ class Car:
         
         
 
-        # i represents the sensor index
+        # i represents the index of the sensor
         for i, theta_o in enumerate(self.sensor_offset):
             slope = -math.tan((self.angle+theta_o) * (math.pi/180))
 
             image_center = self.image.get_rect(topleft=(self.x, self.y)).center
 
-            sensor_start = (round(image_center[0] + math.cos((self.angle+theta_o) * (math.pi/180)) * self.image.get_size()[0]/2),
-                            round(image_center[1] - math.sin((self.angle+theta_o) * (math.pi/180)) * self.image.get_size()[0]/2))
+            # Angle of the corner of the car
+            corner_angle = abs(math.degrees(math.atan((self.image.get_size()[1]/2) / (self.image.get_size()[0]/2))) )
+            
+            if abs(theta_o)<corner_angle:
+                h = abs((self.image.get_size()[0]/2) / (math.cos(math.radians(theta_o))))
+                sensor_start = (round(image_center[0] + h*math.cos(math.radians(theta_o+self.angle))),
+                                round(image_center[1] - h*math.sin(math.radians(theta_o+self.angle))))
+            else:
+                h = abs((self.image.get_size()[1]/2) / (math.sin(math.radians(theta_o))))
+                sensor_start = (round(image_center[0] + h*math.cos(math.radians(theta_o+self.angle))),
+                                round(image_center[1] - h*math.sin(math.radians(theta_o+self.angle))))
+            
+            #sensor_start = (round(image_center[0] + math.cos((self.angle+theta_o) * (math.pi/180)) * self.image.get_size()[0]/2),
+            #                round(image_center[1] - math.sin((self.angle+theta_o) * (math.pi/180)) * self.image.get_size()[0]/2))
 
             # Flip the sensor measurement if the car is facing left
             if (sensor_start[0] < image_center[0]):

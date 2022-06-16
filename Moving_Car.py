@@ -4,7 +4,7 @@ from Car import Car
 import sys
 
 
-def on_init():
+def on_init():  
     pygame.init()
 
 
@@ -32,8 +32,8 @@ background_image = pygame.image.load("images/map.png").convert_alpha()
 # Car image used from : https://github.com/NeuralNine/ai-car-simulation/blob/master/car.png
 car_image = pygame.image.load("images/car.png").convert_alpha()
 car_image = pygame.transform.scale(car_image, (100, 50))
-car_1 = Car(car_image, 881, 800, 0)
-
+#car_1 = Car(car_image, 881, 800, 0)
+car_1 = Car(car_image, 500, 500, 0)
 
 def on_event(event):
     if event.type == QUIT:
