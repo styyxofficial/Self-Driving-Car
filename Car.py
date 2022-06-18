@@ -22,7 +22,7 @@ class Car:
         self.old_y = 0
         
         # angle of the sensors
-        self.sensor_offset = [0, 5, 37, 90, -5, -37, -90, 180]
+        self.sensor_offset = [0, 5, 37, 90, -5, -37, -90]
         
         # distance of each sensor
         self.distances = np.zeros(len(self.sensor_offset))

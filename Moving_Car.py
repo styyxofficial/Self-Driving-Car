@@ -152,7 +152,7 @@ stats = neat.StatisticsReporter()
 population.add_reporter(stats)
 
 # Run Simulation For A Maximum of 1000 Generations
-population.run(run_simulation, 1000)
+population.run(run_simulation, 10000)
     
 
 on_cleanup()
