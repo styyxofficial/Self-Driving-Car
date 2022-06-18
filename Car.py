@@ -1,7 +1,9 @@
+from re import L
 import numpy as np
 import pygame
 from pygame.locals import *
 import math
+import threading
 
 
 # With this current implementation of car, you cannot choose the accerlation. You apply a set acceleration for a certain amount of time
@@ -15,8 +17,12 @@ class Car:
         self.distance_traveled = 0.0
         self.is_alive = True
         
+        # position from 3 seconds ago, to check if the car has moved a lot
+        self.old_x = 0
+        self.old_y = 0
+        
         # angle of the sensors
-        self.sensor_offset = [0, 5, 37, 90, -5, -37, -90]
+        self.sensor_offset = [0, 5, 37, 90, -5, -37, -90, 180]
         
         # distance of each sensor
         self.distances = np.zeros(len(self.sensor_offset))
@@ -28,6 +34,8 @@ class Car:
         # Affected by time and acceleration
         self.linear_velocity = 0.0
         self.rotational_velocity = 0.0
+        
+        self.check_position()
 
     def draw(self, screen):
 
@@ -52,6 +60,8 @@ class Car:
         self.check_bounds(screen)
         self.collision_detection(screen)
         self.sensors(screen)
+        
+        #print(self.is_alive)
 
         img = pygame.transform.rotate(self.image, self.angle)
 
@@ -150,10 +160,10 @@ class Car:
             corner = (round(length_to_corner * math.cos(angle_to_corner[i]) + image_center[0]), round(length_to_corner * math.sin(angle_to_corner[i]) + image_center[1]))
 
             if (tuple(screen.get_at(corner)) == (255, 255, 255, 255)):
-                pygame.draw.circle(surface=screen, color="red", center=corner, radius=4)
+                #pygame.draw.circle(surface=screen, color="red", center=corner, radius=4)
                 self.is_alive = False
-            else:
-                pygame.draw.circle(surface=screen, color="green", center=corner, radius=4)
+            # else:
+            #     pygame.draw.circle(surface=screen, color="green", center=corner, radius=4)
 
     def sensors(self, screen):
         """
@@ -212,7 +222,7 @@ class Car:
                     #    self.distances[i] = np.linalg.norm(image_center - pos)
                     if (tuple(screen.get_at(pos)) == (255, 255, 255, 255)):
                         #pygame.draw.line(screen, color="blue", start_pos=sensor_start, end_pos=pos, width=3)
-                        pygame.draw.circle(surface=screen, color="blue", center=pos, radius=4)
+                        #pygame.draw.circle(surface=screen, color="blue", center=pos, radius=4)
                         self.distances[i] = math.sqrt((pos[0]-image_center[0])**2 + (pos[1]-image_center[1])**2)
                         break
                 except:
@@ -221,7 +231,42 @@ class Car:
         return self.distances
     
     def is_alive(self):
+        """
+
+        Returns:
+            is_alive: boolean to see if the car is still alive.
+        """
         return self.is_alive
     
     def get_data(self):
-        return np.append(self.distances, [self.linear_velocity, self.rotational_velocity])
+        """
+        Returns:
+            numpy array: Array of sensor values and velocity data
+        """
+        #return np.append(self.distances, [self.linear_velocity, self.rotational_velocity])
+        return self.distances
+    
+    def check_position(self):
+        """
+        Checks if the position of the car has changed significantly in the last 1 seconds
+        """
+        th = threading.Timer(2.0, self.check_position)
+        th.daemon  = True
+        th.start()
+        
+        d = math.sqrt((self.x-self.old_x)**2 + (self.y-self.old_y)**2)
+        
+        if (d < 50):
+            self.is_alive = False
+        
+        self.old_x = self.x
+        self.old_y = self.y
+
+    def get_fitness(self):
+        """
+        We want to maximize the forward speed and distance of the car
+        
+        Returns:
+            float: Fitness is dependent on the distance the car travels and the velocity
+        """
+        return self.distance_traveled
