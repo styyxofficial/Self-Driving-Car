@@ -6,7 +6,8 @@ import sys
 import neat
 import time
 
-def on_init():  
+
+def on_init():
     pygame.init()
 
 
@@ -44,16 +45,16 @@ def on_event(event):
 
     # if pygame.key.get_pressed()[K_UP]:
     #     car_1.move_forward()
-        
+
     # if pygame.key.get_pressed()[K_DOWN]:
     #     car_1.move_backward()
-        
+
     # if pygame.key.get_pressed()[K_LEFT]:
     #     car_1.move_left()
-        
+
     # if pygame.key.get_pressed()[K_RIGHT]:
     #      car_1.move_right()
-        
+
 
 def on_loop():
     pass
@@ -72,9 +73,6 @@ def on_cleanup():
     sys.exit()
 
 
-
-
-
 def run_simulation(genomes, config):
     # Empty Collections For Nets and Cars
     nets = []
@@ -89,32 +87,31 @@ def run_simulation(genomes, config):
         cars.append(Car(car_image, 881, 800, 0))
 
     # timeout = time.time() + 60*5   # 5 minutes from now
-    #timeout = time.time() + 15   # 10 seconds from now
-    
-    timeout = time.time() + 15 # 15 seconds after current time
-    
+    # timeout = time.time() + 15   # 10 seconds from now
+
+    timeout = time.time() + 15  # 15 seconds after current time
+
     while(_running):
-        
+
         # End the game when the X is pressed
         for event in pygame.event.get():
             on_event(event)
-            
+
         # For Each Car see if its alive
         # Get the action it should take
         # Draw the car
-        
+
         screen.blit(background_image, (0, 0))
-        
-        cars_alive = 0 
+
+        cars_alive = 0
         for i, car in enumerate(cars):
-           
-            
+
             if car.is_alive:
                 cars_alive += 1
                 genomes[i][1].fitness = car.get_fitness()
-                
+
                 output = nets[i].activate(car.get_data())
-                #### This needs to be tested
+                # This needs to be tested
                 choice = output.index(max(output))
                 if choice == 0:
                     car.move_forward()
@@ -124,24 +121,32 @@ def run_simulation(genomes, config):
                     car.move_left()
                 else:
                     car.move_right()
-                
+
                 car.draw(screen)
         pygame.display.flip()
-        
-        
-        if cars_alive==0:
+
+        if cars_alive == 0:
             break
-        
-        if time.time()>timeout:
+
+        if time.time() > timeout:
             break
-        
+
         # if time.time()>timeout:
         #    break
-        
-        #on_loop()
-        #on_render()
+
+        # on_loop()
+        # on_render()
         fpsClock.tick(FPS)
-    
+
+    def eval_genome(genome, config):
+        net = neat.nn.FeedForwardNetwork.create(genome, config)
+        car = Car(car_image, 881, 800, 0)
+
+        while(_running):
+            # End the game when the X is pressed
+            for event in pygame.event.get():
+                on_event(event)
+
 
 # Load Config
 config_path = "config.txt"
@@ -159,7 +164,7 @@ population.add_reporter(stats)
 
 # Run Simulation For A Maximum of 1000 Generations
 population.run(run_simulation, 10000)
-    
+
 
 on_cleanup()
 
