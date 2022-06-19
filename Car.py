@@ -37,7 +37,7 @@ class Car:
         
         self.check_position()
 
-    def draw(self, screen):
+    def update(self, screen):
 
         time_unit = 1.0
 
@@ -63,13 +63,17 @@ class Car:
         
         #print(self.is_alive)
 
-        img = pygame.transform.rotate(self.image, self.angle)
+        # img = pygame.transform.rotate(self.image, self.angle)
 
-        # screen.blit(img, (self.x, self.y))
-        screen.blit(img, img.get_rect(center=self.image.get_rect(topleft=(self.x, self.y)).center))
+        # # screen.blit(img, (self.x, self.y))
+        # screen.blit(img, img.get_rect(center=self.image.get_rect(topleft=(self.x, self.y)).center))
 
         self.linear_acceleration = 0
         self.rotational_acceleration = 0
+        
+    def draw(self, screen):
+        img = pygame.transform.rotate(self.image, self.angle)
+        screen.blit(img, img.get_rect(center=self.image.get_rect(topleft=(self.x, self.y)).center))
 
     def move_forward(self):
         """
