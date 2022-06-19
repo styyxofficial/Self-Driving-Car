@@ -4,6 +4,7 @@ from pygame.locals import *
 from Car import Car
 import sys
 import neat
+import time
 
 def on_init():  
     pygame.init()
@@ -90,6 +91,8 @@ def run_simulation(genomes, config):
     # timeout = time.time() + 60*5   # 5 minutes from now
     #timeout = time.time() + 15   # 10 seconds from now
     
+    timeout = time.time() + 15 # 15 seconds after current time
+    
     while(_running):
         
         # End the game when the X is pressed
@@ -129,6 +132,9 @@ def run_simulation(genomes, config):
         if cars_alive==0:
             break
         
+        if time.time()>timeout:
+            break
+        
         # if time.time()>timeout:
         #    break
         
@@ -161,3 +167,5 @@ on_cleanup()
 # https://github.com/CodeReclaimers/neat-python/blob/master/neat/checkpoint.py
 
 
+# Use this to visualize the network
+# https://ai.stackexchange.com/questions/13948/library-for-rendering-neural-network-neat

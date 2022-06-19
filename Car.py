@@ -243,6 +243,8 @@ class Car:
         Returns:
             numpy array: Array of sensor values and velocity data
         """
+        # old data would use the cars speed as well to make decisions.
+        # added too much complexity to the model and would slow down the computer
         #return np.append(self.distances, [self.linear_velocity, self.rotational_velocity])
         return self.distances
     
@@ -269,4 +271,4 @@ class Car:
         Returns:
             float: Fitness is dependent on the distance the car travels and the velocity
         """
-        return self.distance_traveled
+        return self.distance_traveled * self.linear_velocity
