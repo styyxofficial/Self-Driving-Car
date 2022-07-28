@@ -62,8 +62,8 @@ weight_init_mean        = 0.0
 weight_init_stdev       = 0.3
 weight_max_value        = 50
 weight_min_value        = -50
-weight_mutate_power     = 0.1
-weight_mutate_rate      = 0.3
+weight_mutate_power     = 0.05
+weight_mutate_rate      = 0.2
 weight_replace_rate     = 0.01
 
 [DefaultSpeciesSet]
@@ -72,7 +72,7 @@ compatibility_threshold = 3.0
 [DefaultStagnation]
 species_fitness_func = max
 max_stagnation       = 15
-species_elitism      = 2
+species_elitism      = 1
 
 [DefaultReproduction]
 elitism            = 1

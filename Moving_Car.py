@@ -1,4 +1,4 @@
-from tkinter import N
+from turtle import back
 import pygame
 from pygame.locals import *
 from Car import Car
@@ -6,34 +6,52 @@ import sys
 import neat
 import time
 import multiprocessing
+import visualize
 
-    
-# Number of ms in 1 time unit
-# Needed for acceleration and for limiting key presses
-# time_unit = 15
-# pygame.key.set_repeat(time_unit)
 
-screen_width = 1920
-screen_height = 1080
+# Load Config
+# screen_width = 1920
+# screen_height = 1080
 
-_running = True
-screen = pygame.display.set_mode((screen_width, screen_height), pygame.HWSURFACE | pygame.DOUBLEBUF)
+# _running = True
 
-FPS = 60
-fpsClock = pygame.time.Clock()
+# FPS = 60
+# fpsClock = pygame.time.Clock()
+
+# # Load game assests
+# # map as background image
+
+# # Car image used from : https://github.com/NeuralNine/ai-car-simulation/blob/master/car.png
+
+
+# screen = pygame.display.set_mode((screen_width, screen_height), pygame.HWSURFACE | pygame.DOUBLEBUF)
+
+# car_image = pygame.image.load("images/car.png").convert_alpha()
+# car_image = pygame.transform.scale(car_image, (100, 50))
+# background_image = pygame.image.load("images/map.png").convert_alpha()
+
+screen_width = None
+screen_height = None
+
+_running = None
+
+FPS = None
+fpsClock = None
 
 # Load game assests
 # map as background image
-background_image = pygame.image.load("images/map.png").convert_alpha()
-# Car image used from : https://github.com/NeuralNine/ai-car-simulation/blob/master/car.png
-    
-    
 
-#screen.fill("WHITE")
-    
-car_image = pygame.image.load("images/car.png").convert_alpha()
-car_image = pygame.transform.scale(car_image, (100, 50))
-    
+# Car image used from : https://github.com/NeuralNine/ai-car-simulation/blob/master/car.png
+
+
+screen = None
+
+car_image = None
+car_image = None
+background_image = None
+
+
+
 def on_init():
     pygame.init()
 
@@ -77,6 +95,7 @@ def run_simulation(genomes, config):
     nets = []
     cars = []
 
+    
     # For All Genomes Passed Create A New Neural Network
     for i, g in genomes:
         net = neat.nn.FeedForwardNetwork.create(g, config)
@@ -142,7 +161,7 @@ def eval_genome(genome, config):
     car = Car(car_image, 881, 800, 0)
 
     timeout = time.time() + 15  # 15 seconds after current time
-    
+        
     while car.is_alive:
         # End the game when the X is pressed
         for event in pygame.event.get():
@@ -150,7 +169,7 @@ def eval_genome(genome, config):
             
         screen.blit(background_image, (0, 0))
         
-        genome.fitness = car.get_fitness()
+        
 
         output = net.activate(car.get_data())
         # This needs to be tested
@@ -167,60 +186,139 @@ def eval_genome(genome, config):
         car.update(screen)
         car.draw(screen)
         
-        
+        genome.fitness = car.get_fitness()
         pygame.display.flip()
         
         #fpsClock.tick(FPS)
     return car.get_fitness()
 
+def eval_genome2(genomes, config):
+    
+    global screen_width, screen_height, _running, FPS, fpsClock, screen, car_image, background_image
+    
+    screen_width = 1920
+    screen_height = 1080
+
+    _running = True
+
+    FPS = 60
+    fpsClock = pygame.time.Clock()
+
+    # Load game assests
+    # map as background image
+
+    # Car image used from : https://github.com/NeuralNine/ai-car-simulation/blob/master/car.png
+
+
+    screen = pygame.display.set_mode((screen_width, screen_height), pygame.HWSURFACE | pygame.DOUBLEBUF)
+
+    car_image = pygame.image.load("images/car.png").convert_alpha()
+    car_image = pygame.transform.scale(car_image, (100, 50))
+    background_image = pygame.image.load("images/map.png").convert_alpha()
+
+
+    # Empty Collections For Nets and Cars
+    nets = []
+    cars = []
+    fitness = []
+    
+    # For All Genomes Passed Create A New Neural Network
+    for i, g in genomes:
+        net = neat.nn.FeedForwardNetwork.create(g, config)
+        nets.append(net)
+        g.fitness = 0
+        fitness.append(0)
+        
+        cars.append(Car(car_image, 881, 800, 0))
+        
+    timeout = time.time() + 15  # 15 seconds after current time
+    #print(genomes)
+    #print(_running)
+    while _running:
+        cars_alive = 0
+        screen.blit(background_image, (0, 0))
+        
+        for i, car in enumerate(cars):
+            if car.is_alive:
+                cars_alive += 1
+                genomes[i][1].fitness = car.get_fitness()
+                fitness[i] = car.get_fitness()
+                
+                output = nets[i].activate(car.get_data())
+                # This needs to be tested
+                choice = output.index(max(output))
+                if choice == 0:
+                    car.move_forward()
+                elif choice == 1:
+                    car.move_backward()
+                elif choice == 2:
+                    car.move_left()
+                else:
+                    car.move_right()
+
+                car.update(screen)
+                car.draw(screen)
+        
+        pygame.display.flip()
+        #print(cars_alive)
+        if cars_alive == 0:
+            break
+        if time.time() > timeout:
+            break
+        
+        fpsClock.tick(FPS)
+    #print(fitness)
+    return fitness
+
 
 if __name__ == '__main__':
     on_init()
     
-    # Load Config
     config_path = "config.txt"
     config = neat.config.Config(neat.DefaultGenome,
                                 neat.DefaultReproduction,
                                 neat.DefaultSpeciesSet,
                                 neat.DefaultStagnation,
                                 config_path)
+    
+    config_path2 = "config2.txt"
+    config2 = neat.config.Config(neat.DefaultGenome,
+                                neat.DefaultReproduction,
+                                neat.DefaultSpeciesSet,
+                                neat.DefaultStagnation,
+                                config_path2)
+    
+    config_path3 = "config3.txt"
+    config3 = neat.config.Config(neat.DefaultGenome,
+                                neat.DefaultReproduction,
+                                neat.DefaultSpeciesSet,
+                                neat.DefaultStagnation,
+                                config_path3)
 
+    config_path4 = "config4.txt"
+    config4 = neat.config.Config(neat.DefaultGenome,
+                                neat.DefaultReproduction,
+                                neat.DefaultSpeciesSet,
+                                neat.DefaultStagnation,
+                                config_path4)
+    
+    config_list = [config, config2, config3]
+    
     # Create Population And Add Reporters
-    population = neat.Population(config)
+    population = neat.Population(config_list)
     population.add_reporter(neat.StdOutReporter(True))
     stats = neat.StatisticsReporter()
     population.add_reporter(stats)
 
-    # Run for up to 300 generations.
-    pe = neat.ParallelEvaluator(6, eval_genome)
-    winner = population.run(pe.evaluate, 300)
+    # Run for up to 400 generations.
+    pe = neat.ParallelEvaluator(6, eval_genome2, maxtaskperchild=36*2)
+    winner = population.run(pe.evaluate, 200)
     
-    print('\nBest genome:\n{!s}'.format(winner))
-    
-    # Show output of the most fit genome against training data.
-    
-    winner_net = neat.nn.FeedForwardNetwork.create(winner, config)
-    
-    car = Car(car_image, 881, 800, 0)
-    
-    while car.is_alive:
-        output = winner_net.activate(car.get_data())
-        choice = output.index(max(output))
-        if choice == 0:
-            car.move_forward()
-        elif choice == 1:
-            car.move_backward()
-        elif choice == 2:
-            car.move_left()
-        else:
-            car.move_right()
-
-        car.update(screen)
-        screen.blit(background_image, (0, 0))
-        car.draw(screen)
-        
-        pygame.display.flip()
-        fpsClock.tick(FPS)
+    # Draw the net
+    node_names = {0: 'Forward', 1: 'Backward', 2: 'Left', 3:'Right'}
+    visualize.draw_net(config, winner, True, node_names=node_names)
+    visualize.plot_stats(stats, ylog=False, view=True)
+    visualize.plot_species(stats, view=True)
     
     
     # Run Simulation For A Maximum of 1000 Generations
@@ -230,9 +328,13 @@ if __name__ == '__main__':
 
     on_cleanup()
 
-# Use this to save genomes
-# https://github.com/CodeReclaimers/neat-python/blob/master/neat/checkpoint.py
+    # Use this to save genomes
+    # https://github.com/CodeReclaimers/neat-python/blob/master/neat/checkpoint.py
 
 
-# Use this to visualize the network
-# https://ai.stackexchange.com/questions/13948/library-for-rendering-neural-network-neat
+    # Use this to visualize the network
+    # https://ai.stackexchange.com/questions/13948/library-for-rendering-neural-network-neat
+
+    # Use for parallelization
+    # https://github.com/CodeReclaimers/neat-python/blob/master/examples/xor/evolve-feedforward-parallel.py
+

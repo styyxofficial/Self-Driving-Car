@@ -1,4 +1,5 @@
 {
 	"diffEditor.wordWrap": "off",
-	"editor.wordWrap": "off"
+	"editor.wordWrap": "off",
+	"git.ignoreLimitWarning": true
 }

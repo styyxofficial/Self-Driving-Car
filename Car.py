@@ -72,6 +72,7 @@ class Car:
         self.rotational_acceleration = 0
         
     def draw(self, screen):
+        #print("drawing")
         img = pygame.transform.rotate(self.image, self.angle)
         screen.blit(img, img.get_rect(center=self.image.get_rect(topleft=(self.x, self.y)).center))
 
@@ -249,8 +250,8 @@ class Car:
         """
         # old data would use the cars speed as well to make decisions.
         # added too much complexity to the model and would slow down the computer
-        #return np.append(self.distances, [self.linear_velocity, self.rotational_velocity])
-        return self.distances
+        return np.append(self.distances, [self.linear_velocity, self.rotational_velocity])
+        #return self.distances
     
     def check_position(self):
         """
@@ -273,6 +274,8 @@ class Car:
         We want to maximize the forward speed and distance of the car
         
         Returns:
-            float: Fitness is dependent on the distance the car travels and the velocity
+            float: Fitness is dependent on the distance the car travels. Speed is regulated by the time limit of 15 seconds
         """
+        # Fitness can either be pure distance, o
+        #return self.distance_traveled
         return self.distance_traveled * self.linear_velocity
