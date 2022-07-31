@@ -17,6 +17,7 @@ class Car:
         self.distance_traveled = 0.0
         self.is_alive = True
         
+        
         # position from 3 seconds ago, to check if the car has moved a lot
         self.old_x = 0
         self.old_y = 0
@@ -35,6 +36,10 @@ class Car:
         self.linear_velocity = 0.0
         self.rotational_velocity = 0.0
         
+        # Average velocity calculation used for fitness
+        self.total_linear_velocity = 0
+        self.ticks = 1
+        
         self.check_position()
 
     def update(self, screen):
@@ -48,7 +53,10 @@ class Car:
         self.rotational_velocity += time_unit * self.rotational_acceleration
 
         self.check_max_velocity()
-
+        
+        self.total_linear_velocity += self.linear_velocity
+        self.ticks += 1
+        
         # print(self.linear_acceleration)
         self.angle += self.rotational_velocity * time_unit
         self.distance_traveled += self.linear_velocity * time_unit
@@ -277,5 +285,8 @@ class Car:
             float: Fitness is dependent on the distance the car travels. Speed is regulated by the time limit of 15 seconds
         """
         # Fitness can either be pure distance, o
-        #return self.distance_traveled
-        return self.distance_traveled * self.linear_velocity
+        # return self.distance_traveled
+        # return ((self.distance_traveled/100) * ((self.linear_velocity**2)/100))
+        
+        # Calculate fitness based on average velocity
+        return ((self.distance_traveled/100) * (((self.total_linear_velocity/self.ticks)**2)/100))

@@ -312,7 +312,7 @@ if __name__ == '__main__':
 
     # Run for up to 400 generations.
     pe = neat.ParallelEvaluator(6, eval_genome2, maxtaskperchild=36*2)
-    winner = population.run(pe.evaluate, 200)
+    winner = population.run(pe.evaluate, 400)
     
     # Draw the net
     node_names = {0: 'Forward', 1: 'Backward', 2: 'Left', 3:'Right'}
