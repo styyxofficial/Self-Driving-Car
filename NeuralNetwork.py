@@ -17,10 +17,10 @@ class NeuralNetwork:
 
         if layers == None:
             self.layers = [
-                np.random.normal(self.mutation_init_mean, self.mutation_init_sd, size = (9, 5)), # Layer 1
-                np.random.normal(self.mutation_init_mean, self.mutation_init_sd, size = (5, 5)), # Layer 2
+                np.random.normal(self.mutation_init_mean, self.mutation_init_sd, size = (9, 6)), # Layer 1
+                np.random.normal(self.mutation_init_mean, self.mutation_init_sd, size = (6, 6)), # Layer 2
                 #np.random.normal(self.mutation_init_mean, self.mutation_init_sd, size = (9, 5)), # Layer 3
-                np.random.normal(self.mutation_init_mean, self.mutation_init_sd, size = (5, 5)) # Output Layer
+                np.random.normal(self.mutation_init_mean, self.mutation_init_sd, size = (6, 5)) # Output Layer
             ]
         else:
             self.layers = copy.deepcopy(layers)
