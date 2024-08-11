@@ -22,12 +22,25 @@ Now you want to create an isolated environment for the project so that it does n
 ```make
 :: Open up the Anaconda Prompt, which should have been installed with miniconda
 
+:: Navigate to the directory where the project was cloned
+cd "C:/some/random/directory/Self-Driving-Car"
+
 :: Use environment.yml file to create the environment with all the dependencies
 conda env create -f environment.yml
 
-:: Activate the environment you just created
+:: Activate the environment you just created. From here, you are ready to run the project.
 conda activate self-driving-car
 
 :: Once you are DONE running the project, you can deactivate the conda env
 conda deactivate
+```
+
+## How to Run
+Follow these steps after setting up the dependencies to run the program:
+```python
+# Open up Git Bash again and make sure you are in the directory containing the project
+cd "C:/some/random/directory/Self-Driving-Car"
+
+# Run the python program
+python Moving_Car.py
 ```

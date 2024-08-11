@@ -1,0 +1,8 @@
+name: self-driving-car
+dependencies:
+  - python=3.12
+  - pip
+  - pip:
+    - numpy==2.0.1
+    - pygame==2.6.0
+    - git+https://github.com/styyxofficial/neat-python-multiprocessing.git
