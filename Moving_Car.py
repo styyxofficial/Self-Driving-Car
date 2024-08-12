@@ -85,78 +85,14 @@ def on_render():
 
 
 def on_cleanup():
+    _running = False
     pygame.display.quit()
     pygame.quit()
     sys.exit()
-
-
-def run_simulation(genomes, config):
-    # Empty Collections For Nets and Cars
-    nets = []
-    cars = []
-
-    
-    # For All Genomes Passed Create A New Neural Network
-    for i, g in genomes:
-        net = neat.nn.FeedForwardNetwork.create(g, config)
-        nets.append(net)
-        g.fitness = 0
-
-        cars.append(Car(car_image, 881, 800, 0))
-
-    # timeout = time.time() + 60*5   # 5 minutes from now
-    # timeout = time.time() + 15   # 10 seconds from now
-
-    timeout = time.time() + 15  # 15 seconds after current time
-
-    while(_running):
-
-        # End the game when the X is pressed
-        for event in pygame.event.get():
-            on_event(event)
-
-        # For Each Car see if its alive
-        # Get the action it should take
-        # Draw the car
-
-        screen.blit(background_image, (0, 0))
-
-        cars_alive = 0
-        for i, car in enumerate(cars):
-
-            if car.is_alive:
-                cars_alive += 1
-                genomes[i][1].fitness = car.get_fitness()
-
-                output = nets[i].activate(car.get_data())
-                # This needs to be tested
-                choice = output.index(max(output))
-                if choice == 0:
-                    car.move_forward()
-                elif choice == 1:
-                    car.move_backward()
-                elif choice == 2:
-                    car.move_left()
-                else:
-                    car.move_right()
-
-                car.draw(screen)
-        pygame.display.flip()
-
-        if cars_alive == 0:
-            break
-
-        if time.time() > timeout:
-            break
-
-        # if time.time()>timeout:
-        #    break
-
-        # on_loop()
-        # on_render()
-        fpsClock.tick(FPS)
+    exit(1)
 
 def eval_genome(genome, config):
+    print("run rendering")
     net = neat.nn.FeedForwardNetwork.create(genome, config)
     car = Car(car_image, 881, 800, 0)
 
@@ -192,8 +128,11 @@ def eval_genome(genome, config):
         #fpsClock.tick(FPS)
     return car.get_fitness()
 
+"""
+This version of an eval_function is not standard. Typically the eval function accepts 1 genome and returns its fitness. Here we use multiple genomes as a list because we want each CPU Core to handle many cars at the same time.
+In order for this to work, the parallel.py function in NEAT has to be modified to support evaluating genomes as lists, and over multiple CPU cores with different memory allocations.
+"""
 def eval_genome2(genomes, config):
-    
     global screen_width, screen_height, _running, FPS, fpsClock, screen, car_image, background_image
     
     screen_width = 1920
@@ -232,16 +171,18 @@ def eval_genome2(genomes, config):
         cars.append(Car(car_image, 881, 800, 0))
         
     timeout = time.time() + 15  # 15 seconds after current time
-    #print(genomes)
-    #print(_running)
+
     while _running:
+        # End the game when the X is pressed
+        # for event in pygame.event.get():
+        #     on_event(event)
+        
         cars_alive = 0
         screen.blit(background_image, (0, 0))
         
         for i, car in enumerate(cars):
             if car.is_alive:
                 cars_alive += 1
-                genomes[i][1].fitness = car.get_fitness()
                 fitness[i] = car.get_fitness()
                 
                 output = nets[i].activate(car.get_data())
@@ -260,14 +201,14 @@ def eval_genome2(genomes, config):
                 car.draw(screen)
         
         pygame.display.flip()
-        #print(cars_alive)
+
         if cars_alive == 0:
             break
         if time.time() > timeout:
             break
         
         fpsClock.tick(FPS)
-    #print(fitness)
+        
     return fitness
 
 
@@ -281,38 +222,39 @@ if __name__ == '__main__':
                                 neat.DefaultStagnation,
                                 config_path)
     
-    config_path2 = "config2.txt"
-    config2 = neat.config.Config(neat.DefaultGenome,
-                                neat.DefaultReproduction,
-                                neat.DefaultSpeciesSet,
-                                neat.DefaultStagnation,
-                                config_path2)
+    # config_path2 = "config2.txt"
+    # config2 = neat.config.Config(neat.DefaultGenome,
+    #                             neat.DefaultReproduction,
+    #                             neat.DefaultSpeciesSet,
+    #                             neat.DefaultStagnation,
+    #                             config_path2)
     
-    config_path3 = "config3.txt"
-    config3 = neat.config.Config(neat.DefaultGenome,
-                                neat.DefaultReproduction,
-                                neat.DefaultSpeciesSet,
-                                neat.DefaultStagnation,
-                                config_path3)
+    # config_path3 = "config3.txt"
+    # config3 = neat.config.Config(neat.DefaultGenome,
+    #                             neat.DefaultReproduction,
+    #                             neat.DefaultSpeciesSet,
+    #                             neat.DefaultStagnation,
+    #                             config_path3)
 
-    config_path4 = "config4.txt"
-    config4 = neat.config.Config(neat.DefaultGenome,
-                                neat.DefaultReproduction,
-                                neat.DefaultSpeciesSet,
-                                neat.DefaultStagnation,
-                                config_path4)
+    # config_path4 = "config4.txt"
+    # config4 = neat.config.Config(neat.DefaultGenome,
+    #                             neat.DefaultReproduction,
+    #                             neat.DefaultSpeciesSet,
+    #                             neat.DefaultStagnation,
+    #                             config_path4)
     
-    config_list = [config, config2, config3]
+    # config_list = [config, config2, config3]
     
     # Create Population And Add Reporters
-    population = neat.Population(config_list)
+    population = neat.Population(config)
     population.add_reporter(neat.StdOutReporter(True))
     stats = neat.StatisticsReporter()
     population.add_reporter(stats)
 
     # Run for up to 400 generations.
-    pe = neat.ParallelEvaluator(6, eval_genome2, maxtaskperchild=36*2)
-    winner = population.run(pe.evaluate, 400)
+    pe = neat.ParallelEvaluator(6, eval_genome2, maxtasksperchild=36*2)
+
+    winner = population.run(pe.evaluate, 200)
     
     # Draw the net
     node_names = {0: 'Forward', 1: 'Backward', 2: 'Left', 3:'Right'}
