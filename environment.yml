@@ -1,10 +1,10 @@
 name: self-driving-car
 dependencies:
   - python=3.12
+  - python-graphviz
   - pip
   - pip:
     - numpy==2.0.1
     - pygame==2.6.0
-    - graphviz==0.20.3
     - matplotlib==3.9.0
     - git+https://github.com/styyxofficial/neat-python-multiprocessing.git

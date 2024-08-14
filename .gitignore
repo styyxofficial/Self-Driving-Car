@@ -1,3 +1,5 @@
 reference_drawings/*
 .vscode/*
 __pycache__/*
+*.gv
+*.svg

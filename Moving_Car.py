@@ -132,84 +132,94 @@ def eval_genome(genome, config):
 This version of an eval_function is not standard. Typically the eval function accepts 1 genome and returns its fitness. Here we use multiple genomes as a list because we want each CPU Core to handle many cars at the same time.
 In order for this to work, the parallel.py function in NEAT has to be modified to support evaluating genomes as lists, and over multiple CPU cores with different memory allocations.
 """
+from neat.parallel import global_lock
+
 def eval_genome2(genomes, config):
-    global screen_width, screen_height, _running, FPS, fpsClock, screen, car_image, background_image
-    
-    screen_width = 1920
-    screen_height = 1080
+    print(global_lock)
+    try:
 
-    _running = True
+        with global_lock:
+            global screen_width, screen_height, _running, FPS, fpsClock, screen, car_image, background_image
+            
+            screen_width = 1920
+            screen_height = 1080
 
-    FPS = 60
-    fpsClock = pygame.time.Clock()
+            _running = True
 
-    # Load game assests
-    # map as background image
+            FPS = 60
+            fpsClock = pygame.time.Clock()
 
-    # Car image used from : https://github.com/NeuralNine/ai-car-simulation/blob/master/car.png
+            # Load game assests
+            # map as background image
 
-
-    screen = pygame.display.set_mode((screen_width, screen_height), pygame.HWSURFACE | pygame.DOUBLEBUF)
-
-    car_image = pygame.image.load("images/car.png").convert_alpha()
-    car_image = pygame.transform.scale(car_image, (100, 50))
-    background_image = pygame.image.load("images/map.png").convert_alpha()
+            # Car image used from : https://github.com/NeuralNine/ai-car-simulation/blob/master/car.png
 
 
-    # Empty Collections For Nets and Cars
-    nets = []
-    cars = []
-    fitness = []
-    
-    # For All Genomes Passed Create A New Neural Network
-    for i, g in genomes:
-        net = neat.nn.FeedForwardNetwork.create(g, config)
-        nets.append(net)
-        g.fitness = 0
-        fitness.append(0)
-        
-        cars.append(Car(car_image, 881, 800, 0))
-        
-    timeout = time.time() + 15  # 15 seconds after current time
+            screen = pygame.display.set_mode((screen_width, screen_height), pygame.HWSURFACE | pygame.DOUBLEBUF)
 
-    while _running:
-        # End the game when the X is pressed
-        # for event in pygame.event.get():
-        #     on_event(event)
-        
-        cars_alive = 0
-        screen.blit(background_image, (0, 0))
-        
-        for i, car in enumerate(cars):
-            if car.is_alive:
-                cars_alive += 1
-                fitness[i] = car.get_fitness()
+            car_image = pygame.image.load("images/car.png").convert_alpha()
+            car_image = pygame.transform.scale(car_image, (100, 50))
+            background_image = pygame.image.load("images/map.png").convert_alpha()
+
+
+            # Empty Collections For Nets and Cars
+            nets = []
+            cars = []
+            fitness = []
+            
+            # For All Genomes Passed Create A New Neural Network
+            for i, g in genomes:
+                net = neat.nn.FeedForwardNetwork.create(g, config)
+                nets.append(net)
+                g.fitness = 0
+                fitness.append(0)
                 
-                output = nets[i].activate(car.get_data())
-                # This needs to be tested
-                choice = output.index(max(output))
-                if choice == 0:
-                    car.move_forward()
-                elif choice == 1:
-                    car.move_backward()
-                elif choice == 2:
-                    car.move_left()
-                else:
-                    car.move_right()
+                cars.append(Car(car_image, 881, 800, 0))
+                
+            timeout = time.time() + 15  # 15 seconds after current time
 
-                car.update(screen)
-                car.draw(screen)
-        
-        pygame.display.flip()
+            while _running:
+                # End the game when the X is pressed
+                for event in pygame.event.get():
+                    if event.type == QUIT:
+                        return
+                
+                cars_alive = 0
+                screen.blit(background_image, (0, 0))
+                
+                for i, car in enumerate(cars):
+                    if car.is_alive:
+                        cars_alive += 1
+                        fitness[i] = car.get_fitness()
+                        
+                        output = nets[i].activate(car.get_data())
+                        # This needs to be tested
+                        choice = output.index(max(output))
+                        if choice == 0:
+                            car.move_forward()
+                        elif choice == 1:
+                            car.move_backward()
+                        elif choice == 2:
+                            car.move_left()
+                        else:
+                            car.move_right()
 
-        if cars_alive == 0:
-            break
-        if time.time() > timeout:
-            break
-        
-        fpsClock.tick(FPS)
-        
-    return fitness
+                        car.update(screen)
+                        car.draw(screen)
+                
+                pygame.display.flip()
+
+                if cars_alive == 0:
+                    break
+                if time.time() > timeout:
+                    break
+                
+                fpsClock.tick(FPS)
+                
+            return fitness
+
+    except KeyboardInterrupt:
+        return
 
 
 if __name__ == '__main__':
@@ -251,10 +261,11 @@ if __name__ == '__main__':
     stats = neat.StatisticsReporter()
     population.add_reporter(stats)
 
-    # Run for up to 400 generations.
-    pe = neat.ParallelEvaluator(6, eval_genome2, maxtasksperchild=36*2)
+    # Run for up to 200 generations.
+    generations = 200
+    pe = neat.ParallelEvaluator(6, eval_genome2, maxtasksperchild=generations)
 
-    winner = population.run(pe.evaluate, 200)
+    winner = population.run(pe.evaluate, generations)
     
     # Draw the net
     node_names = {0: 'Forward', 1: 'Backward', 2: 'Left', 3:'Right'}
