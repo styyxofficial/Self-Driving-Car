@@ -8,28 +8,6 @@ import time
 import multiprocessing
 import visualize
 
-
-# Load Config
-# screen_width = 1920
-# screen_height = 1080
-
-# _running = True
-
-# FPS = 60
-# fpsClock = pygame.time.Clock()
-
-# # Load game assests
-# # map as background image
-
-# # Car image used from : https://github.com/NeuralNine/ai-car-simulation/blob/master/car.png
-
-
-# screen = pygame.display.set_mode((screen_width, screen_height), pygame.HWSURFACE | pygame.DOUBLEBUF)
-
-# car_image = pygame.image.load("images/car.png").convert_alpha()
-# car_image = pygame.transform.scale(car_image, (100, 50))
-# background_image = pygame.image.load("images/map.png").convert_alpha()
-
 screen_width = None
 screen_height = None
 
@@ -60,6 +38,7 @@ def on_event(event):
     if event.type == QUIT:
         on_cleanup()
 
+    # Implement the following if you want to manually control the car
     # if pygame.key.get_pressed()[K_UP]:
     #     car_1.move_forward()
 
@@ -83,7 +62,6 @@ def on_render():
     car_1.draw(screen)
     pygame.display.flip()
 
-
 def on_cleanup():
     _running = False
     pygame.display.quit()
@@ -91,134 +69,89 @@ def on_cleanup():
     sys.exit()
     exit(1)
 
-def eval_genome(genome, config):
-    print("run rendering")
-    net = neat.nn.FeedForwardNetwork.create(genome, config)
-    car = Car(car_image, 881, 800, 0)
-
-    timeout = time.time() + 15  # 15 seconds after current time
-        
-    while car.is_alive:
-        # End the game when the X is pressed
-        for event in pygame.event.get():
-            on_event(event)
-            
-        screen.blit(background_image, (0, 0))
-        
-        
-
-        output = net.activate(car.get_data())
-        # This needs to be tested
-        choice = output.index(max(output))
-        if choice == 0:
-            car.move_forward()
-        elif choice == 1:
-            car.move_backward()
-        elif choice == 2:
-            car.move_left()
-        else:
-            car.move_right()
-
-        car.update(screen)
-        car.draw(screen)
-        
-        genome.fitness = car.get_fitness()
-        pygame.display.flip()
-        
-        #fpsClock.tick(FPS)
-    return car.get_fitness()
-
 """
-This version of an eval_function is not standard. Typically the eval function accepts 1 genome and returns its fitness. Here we use multiple genomes as a list because we want each CPU Core to handle many cars at the same time.
-In order for this to work, the parallel.py function in NEAT has to be modified to support evaluating genomes as lists, and over multiple CPU cores with different memory allocations.
+This version of an eval_function is not standard. Typically the eval_function accepts 1 genome and returns its fitness. Here we use multiple genomes in a list because we want each CPU Core to handle many cars at the same time.
+In order for this to work, the parallel.py file in NEAT has to be modified to support evaluating genomes as lists, and over multiple CPU cores with different memory allocations.
 """
-from neat.parallel import global_lock
-
 def eval_genome2(genomes, config):
-    print(global_lock)
     try:
+        global screen_width, screen_height, _running, FPS, fpsClock, screen, car_image, background_image
+        
+        screen_width = 1920
+        screen_height = 1080
 
-        with global_lock:
-            global screen_width, screen_height, _running, FPS, fpsClock, screen, car_image, background_image
+        _running = True
+
+        FPS = 60
+        fpsClock = pygame.time.Clock()
+
+        # Load game assests
+        # map as background image
+        # Car image used from : https://github.com/NeuralNine/ai-car-simulation/blob/master/car.png
+
+        screen = pygame.display.set_mode((screen_width, screen_height), pygame.HWSURFACE | pygame.DOUBLEBUF)
+
+        car_image = pygame.image.load("images/car.png").convert_alpha()
+        car_image = pygame.transform.scale(car_image, (100, 50))
+        background_image = pygame.image.load("images/map.png").convert_alpha()
+
+
+        # Empty Collections For Nets and Cars
+        nets = []
+        cars = []
+        fitness = []
+        
+        # For All Genomes Passed Create A New Neural Network
+        for i, g in genomes:
+            net = neat.nn.FeedForwardNetwork.create(g, config)
+            nets.append(net)
+            g.fitness = 0
+            fitness.append(0)
             
-            screen_width = 1920
-            screen_height = 1080
+            cars.append(Car(car_image, 881, 800, 0))
+        
+        # End generation after 15 seconds
+        timeout = time.time() + 15  # 15 seconds after current time
 
-            _running = True
-
-            FPS = 60
-            fpsClock = pygame.time.Clock()
-
-            # Load game assests
-            # map as background image
-
-            # Car image used from : https://github.com/NeuralNine/ai-car-simulation/blob/master/car.png
-
-
-            screen = pygame.display.set_mode((screen_width, screen_height), pygame.HWSURFACE | pygame.DOUBLEBUF)
-
-            car_image = pygame.image.load("images/car.png").convert_alpha()
-            car_image = pygame.transform.scale(car_image, (100, 50))
-            background_image = pygame.image.load("images/map.png").convert_alpha()
-
-
-            # Empty Collections For Nets and Cars
-            nets = []
-            cars = []
-            fitness = []
+        while _running:
+            # End the game when the X is pressed
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    return
             
-            # For All Genomes Passed Create A New Neural Network
-            for i, g in genomes:
-                net = neat.nn.FeedForwardNetwork.create(g, config)
-                nets.append(net)
-                g.fitness = 0
-                fitness.append(0)
-                
-                cars.append(Car(car_image, 881, 800, 0))
-                
-            timeout = time.time() + 15  # 15 seconds after current time
+            cars_alive = 0
+            screen.blit(background_image, (0, 0))
+            
+            for i, car in enumerate(cars):
+                if car.is_alive:
+                    cars_alive += 1
+                    fitness[i] = car.get_fitness()
+                    
+                    output = nets[i].activate(car.get_data())
+                    choice = output.index(max(output))
+                    if choice == 0:
+                        car.move_forward()
+                    elif choice == 1:
+                        car.move_backward()
+                    elif choice == 2:
+                        car.move_left()
+                    else:
+                        car.move_right()
 
-            while _running:
-                # End the game when the X is pressed
-                for event in pygame.event.get():
-                    if event.type == QUIT:
-                        return
-                
-                cars_alive = 0
-                screen.blit(background_image, (0, 0))
-                
-                for i, car in enumerate(cars):
-                    if car.is_alive:
-                        cars_alive += 1
-                        fitness[i] = car.get_fitness()
-                        
-                        output = nets[i].activate(car.get_data())
-                        # This needs to be tested
-                        choice = output.index(max(output))
-                        if choice == 0:
-                            car.move_forward()
-                        elif choice == 1:
-                            car.move_backward()
-                        elif choice == 2:
-                            car.move_left()
-                        else:
-                            car.move_right()
+                    car.update(screen)
+                    car.draw(screen)
+            
+            pygame.display.flip()
 
-                        car.update(screen)
-                        car.draw(screen)
-                
-                pygame.display.flip()
-
-                if cars_alive == 0:
-                    break
-                if time.time() > timeout:
-                    break
-                
-                fpsClock.tick(FPS)
-                
-            return fitness
-
-    except KeyboardInterrupt:
+            if cars_alive == 0:
+                break
+            if time.time() > timeout:
+                break
+            
+            fpsClock.tick(FPS)
+            
+        return fitness
+    except:
         return
 
 
@@ -232,29 +165,6 @@ if __name__ == '__main__':
                                 neat.DefaultStagnation,
                                 config_path)
     
-    # config_path2 = "config2.txt"
-    # config2 = neat.config.Config(neat.DefaultGenome,
-    #                             neat.DefaultReproduction,
-    #                             neat.DefaultSpeciesSet,
-    #                             neat.DefaultStagnation,
-    #                             config_path2)
-    
-    # config_path3 = "config3.txt"
-    # config3 = neat.config.Config(neat.DefaultGenome,
-    #                             neat.DefaultReproduction,
-    #                             neat.DefaultSpeciesSet,
-    #                             neat.DefaultStagnation,
-    #                             config_path3)
-
-    # config_path4 = "config4.txt"
-    # config4 = neat.config.Config(neat.DefaultGenome,
-    #                             neat.DefaultReproduction,
-    #                             neat.DefaultSpeciesSet,
-    #                             neat.DefaultStagnation,
-    #                             config_path4)
-    
-    # config_list = [config, config2, config3]
-    
     # Create Population And Add Reporters
     population = neat.Population(config)
     population.add_reporter(neat.StdOutReporter(True))
@@ -267,11 +177,13 @@ if __name__ == '__main__':
 
     winner = population.run(pe.evaluate, generations)
     
-    # Draw the net
-    node_names = {0: 'Forward', 1: 'Backward', 2: 'Left', 3:'Right'}
-    visualize.draw_net(config, winner, True, node_names=node_names)
-    visualize.plot_stats(stats, ylog=False, view=True)
-    visualize.plot_species(stats, view=True)
+    # Draw the neural network
+    # Only draw the network if the best genome/winner was returned. If the program is cancelled before completing the first iteration, then there will be no winner assigned.
+    if winner:
+        node_names = {0: 'Forward', 1: 'Backward', 2: 'Left', 3:'Right'}
+        visualize.draw_net(config, winner, True, node_names=node_names)
+        visualize.plot_stats(stats, ylog=False, view=True)
+        visualize.plot_species(stats, view=True)
     
     
     # Run Simulation For A Maximum of 1000 Generations
@@ -283,7 +195,6 @@ if __name__ == '__main__':
 
     # Use this to save genomes
     # https://github.com/CodeReclaimers/neat-python/blob/master/neat/checkpoint.py
-
 
     # Use this to visualize the network
     # https://ai.stackexchange.com/questions/13948/library-for-rendering-neural-network-neat
