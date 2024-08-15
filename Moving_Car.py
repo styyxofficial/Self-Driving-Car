@@ -7,6 +7,7 @@ import neat
 import time
 import multiprocessing
 import visualize
+import configparser
 
 screen_width = None
 screen_height = None
@@ -158,7 +159,7 @@ def eval_genome2(genomes, config):
 if __name__ == '__main__':
     on_init()
     
-    config_path = "config.txt"
+    config_path = "neat_config.txt"
     config = neat.config.Config(neat.DefaultGenome,
                                 neat.DefaultReproduction,
                                 neat.DefaultSpeciesSet,
@@ -171,9 +172,17 @@ if __name__ == '__main__':
     stats = neat.StatisticsReporter()
     population.add_reporter(stats)
 
-    # Run for up to 200 generations.
-    generations = 200
-    pe = neat.ParallelEvaluator(6, eval_genome2, maxtasksperchild=generations)
+
+    
+    # Initialize your experiment with # of generations and how many CPU cores you want to run on
+    initial_settings = configparser.RawConfigParser()
+    initial_settings.read('initialization.txt')
+    initial_dict = dict(initial_settings.items('INITIALIZATION'))
+
+    generations = int(initial_dict['generations'])
+    cpu_cores = int(initial_dict['cpu_cores'])
+
+    pe = neat.ParallelEvaluator(cpu_cores, eval_genome2, maxtasksperchild=generations)
 
     winner = population.run(pe.evaluate, generations)
     
