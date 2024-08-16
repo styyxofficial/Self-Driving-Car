@@ -1,6 +1,6 @@
 [INITIALIZATION]
 generations = 200
-cpu_cores = 6
+cpu_cores = 2
 map_path = images/map2.png
 car_start_x = 881
 car_start_y = 800

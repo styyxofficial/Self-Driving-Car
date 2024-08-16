@@ -44,3 +44,18 @@ cd "C:/some/random/directory/Self-Driving-Car"
 # Run the python program
 python Moving_Car.py
 ```
+
+## Customization
+This project allows you to change certain variables to run the experiments you want.\
+\
+First, you can see the [NEAT Config File documentation](https://neat-python.readthedocs.io/en/latest/config_file.html) which allows you to customize the behavior of the NEAT AI. Some basic knowledge of neural networks is required to understand NEAT's configuration options. You can modify the configuration files in `neat_config.txt`.\
+\
+Second, you can customize some initialization in `initialization.txt`. Here you can change various parameters:
+```python
+[INITIALIZATION]
+generations = 200           # Number of generations you want to run for
+cpu_cores = 2               # Number of cpu cores you want to use for parallelization. More cpu cores allows you to increase the simulation size.
+map_path = images/map2.png  # Path of the map that you want the car to race on. Must be 1920x1080 resolution
+car_start_x = 881           # Starting X coordinate of the car
+car_start_y = 800           # Starting Y coordinate of the car
+```
