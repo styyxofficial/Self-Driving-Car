@@ -1,14 +1,14 @@
 [NEAT]
 fitness_criterion     = max
 fitness_threshold     = 50000000
-pop_size              = 36
+pop_size              = 100
 reset_on_extinction   = True
 
 [DefaultGenome]
 # node activation options
 activation_default      = relu
 activation_mutate_rate  = 0.05
-activation_options      = relu sigmoid tanh
+activation_options      = relu
 
 # node aggregation options
 aggregation_default     = sum
@@ -21,8 +21,8 @@ bias_init_stdev         = 1.0
 bias_max_value          = 50.0
 bias_min_value          = -50.0
 bias_mutate_power       = 0.1
-bias_mutate_rate        = 0.05
-bias_replace_rate       = 0.01
+bias_mutate_rate        = 0.1
+bias_replace_rate       = 0.05
 
 # genome compatibility options
 compatibility_disjoint_coefficient = 1.0
@@ -40,8 +40,8 @@ feed_forward            = True
 initial_connection      = full_nodirect
 
 # node add/remove rates
-node_add_prob           = 0.05
-node_delete_prob        = 0.05
+node_add_prob           = 0.1
+node_delete_prob        = 0.1
 
 # network parameters
 num_hidden              = 6

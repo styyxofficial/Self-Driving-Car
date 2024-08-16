@@ -74,7 +74,7 @@ def on_cleanup():
 This version of an eval_function is not standard. Typically the eval_function accepts 1 genome and returns its fitness. Here we use multiple genomes in a list because we want each CPU Core to handle many cars at the same time.
 In order for this to work, the parallel.py file in NEAT has to be modified to support evaluating genomes as lists, and over multiple CPU cores with different memory allocations.
 """
-def eval_genome2(genomes, config):
+def eval_genome2(genomes, config, initial_dict):
     try:
         global screen_width, screen_height, _running, FPS, fpsClock, screen, car_image, background_image
         
@@ -94,7 +94,7 @@ def eval_genome2(genomes, config):
 
         car_image = pygame.image.load("images/car.png").convert_alpha()
         car_image = pygame.transform.scale(car_image, (100, 50))
-        background_image = pygame.image.load("images/map.png").convert_alpha()
+        background_image = pygame.image.load(initial_dict["map_path"]).convert_alpha()
 
 
         # Empty Collections For Nets and Cars
@@ -109,7 +109,7 @@ def eval_genome2(genomes, config):
             g.fitness = 0
             fitness.append(0)
             
-            cars.append(Car(car_image, 881, 800, 0))
+            cars.append(Car(car_image, int(initial_dict["car_start_x"]), int(initial_dict["car_start_y"]), 0))
         
         # End generation after 15 seconds
         timeout = time.time() + 15  # 15 seconds after current time
@@ -159,6 +159,13 @@ def eval_genome2(genomes, config):
 if __name__ == '__main__':
     on_init()
     
+    # Initialize your experiment with # of generations and how many CPU cores you want to run on, the map, and starting location of the car
+    initial_settings = configparser.RawConfigParser()
+    initial_settings.read('initialization.txt')
+    initial_dict = dict(initial_settings.items('INITIALIZATION'))
+    generations = int(initial_dict['generations'])
+    cpu_cores = int(initial_dict['cpu_cores'])
+
     config_path = "neat_config.txt"
     config = neat.config.Config(neat.DefaultGenome,
                                 neat.DefaultReproduction,
@@ -167,20 +174,10 @@ if __name__ == '__main__':
                                 config_path)
     
     # Create Population And Add Reporters
-    population = neat.Population(config)
+    population = neat.Population(config, initial_dict)
     population.add_reporter(neat.StdOutReporter(True))
     stats = neat.StatisticsReporter()
     population.add_reporter(stats)
-
-
-    
-    # Initialize your experiment with # of generations and how many CPU cores you want to run on
-    initial_settings = configparser.RawConfigParser()
-    initial_settings.read('initialization.txt')
-    initial_dict = dict(initial_settings.items('INITIALIZATION'))
-
-    generations = int(initial_dict['generations'])
-    cpu_cores = int(initial_dict['cpu_cores'])
 
     pe = neat.ParallelEvaluator(cpu_cores, eval_genome2, maxtasksperchild=generations)
 
