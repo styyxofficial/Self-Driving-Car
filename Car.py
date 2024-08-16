@@ -28,7 +28,7 @@ class Car:
         # distance of each sensor
         self.distances = np.zeros(len(self.sensor_offset))
 
-        # Acceleration that is controlled by arrow keys
+        # Acceleration
         self.linear_acceleration = 0.0
         self.rotational_acceleration = 0.0
 
@@ -47,7 +47,6 @@ class Car:
         time_unit = 1.0
 
         self.friction()
-        # self.check_max_acceleration()
 
         self.linear_velocity += time_unit * self.linear_acceleration
         self.rotational_velocity += time_unit * self.rotational_acceleration
@@ -57,7 +56,6 @@ class Car:
         self.total_linear_velocity += self.linear_velocity
         self.ticks += 1
         
-        # print(self.linear_acceleration)
         self.angle += self.rotational_velocity * time_unit
         self.distance_traveled += self.linear_velocity * time_unit
 
@@ -68,19 +66,11 @@ class Car:
         self.check_bounds(screen)
         self.collision_detection(screen)
         self.sensors(screen)
-        
-        #print(self.is_alive)
-
-        # img = pygame.transform.rotate(self.image, self.angle)
-
-        # # screen.blit(img, (self.x, self.y))
-        # screen.blit(img, img.get_rect(center=self.image.get_rect(topleft=(self.x, self.y)).center))
 
         self.linear_acceleration = 0
         self.rotational_acceleration = 0
         
     def draw(self, screen):
-        #print("drawing")
         img = pygame.transform.rotate(self.image, self.angle)
         screen.blit(img, img.get_rect(center=self.image.get_rect(topleft=(self.x, self.y)).center))
 
@@ -173,10 +163,7 @@ class Car:
             corner = (round(length_to_corner * math.cos(angle_to_corner[i]) + image_center[0]), round(length_to_corner * math.sin(angle_to_corner[i]) + image_center[1]))
 
             if (tuple(screen.get_at(corner)) == (255, 255, 255, 255)):
-                #pygame.draw.circle(surface=screen, color="red", center=corner, radius=4)
                 self.is_alive = False
-            # else:
-            #     pygame.draw.circle(surface=screen, color="green", center=corner, radius=4)
 
     def sensors(self, screen):
         """
@@ -187,8 +174,6 @@ class Car:
         Returns:
             numpy array of distance values from the sensor
         """
-        
-        
 
         # i represents the index of the sensor
         for i, theta_o in enumerate(self.sensor_offset):
@@ -208,9 +193,6 @@ class Car:
                 sensor_start = (round(image_center[0] + h*math.cos(math.radians(theta_o+self.angle))),
                                 round(image_center[1] - h*math.sin(math.radians(theta_o+self.angle))))
             
-            #sensor_start = (round(image_center[0] + math.cos((self.angle+theta_o) * (math.pi/180)) * self.image.get_size()[0]/2),
-            #                round(image_center[1] - math.sin((self.angle+theta_o) * (math.pi/180)) * self.image.get_size()[0]/2))
-
             # Flip the sensor measurement if the car is facing left
             if (sensor_start[0] < image_center[0]):
                 flip = -1
@@ -223,19 +205,14 @@ class Car:
             else:
                 max_dist = screen.get_size()[0] - image_center[0]
 
-            # use point slope for to calculate the new location
+            # use point slope form to calculate the new location
             for x1 in range(sensor_start[0], sensor_start[0]+max_dist*flip, flip):
                 y1 = -slope * (sensor_start[0]-x1)+sensor_start[1]
 
                 pos = (round(x1), round(y1))
                 
                 try:
-                    #pygame.draw.circle(surface=screen, color="orange", center=pos, radius=4)
-                    #if (tuple(screen.get_at(pos)) == (255, 255, 255, 255)):
-                    #    self.distances[i] = np.linalg.norm(image_center - pos)
                     if (tuple(screen.get_at(pos)) == (255, 255, 255, 255)):
-                        #pygame.draw.line(screen, color="blue", start_pos=sensor_start, end_pos=pos, width=3)
-                        #pygame.draw.circle(surface=screen, color="blue", center=pos, radius=4)
                         self.distances[i] = math.sqrt((pos[0]-image_center[0])**2 + (pos[1]-image_center[1])**2)
                         break
                 except:
@@ -245,7 +222,6 @@ class Car:
     
     def is_alive(self):
         """
-
         Returns:
             is_alive: boolean to see if the car is still alive.
         """
@@ -256,10 +232,7 @@ class Car:
         Returns:
             numpy array: Array of sensor values and velocity data
         """
-        # old data would use the cars speed as well to make decisions.
-        # added too much complexity to the model and would slow down the computer
         return np.append(self.distances, [self.linear_velocity, self.rotational_velocity])
-        #return self.distances
     
     def check_position(self):
         """
@@ -282,11 +255,7 @@ class Car:
         We want to maximize the forward speed and distance of the car
         
         Returns:
-            float: Fitness is dependent on the distance the car travels. Speed is regulated by the time limit of 15 seconds
+            float: Fitness. Dependent on the distance and average velocity of the car.
         """
-        # Fitness can either be pure distance, o
-        # return self.distance_traveled
-        # return ((self.distance_traveled/100) * ((self.linear_velocity**2)/100))
-        
         # Calculate fitness based on average velocity
         return ((self.distance_traveled/100) * (((self.total_linear_velocity/self.ticks)**2)/100))
